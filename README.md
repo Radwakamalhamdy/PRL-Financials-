@@ -1,6 +1,6 @@
 # Prototyping Lab Financials
 
-Financial tracking and management dashboard for the Prototyping Lab at the Faculty of Biotechnology, MSA University.
+Financial tracking and management dashboard for the Prototyping Lab at MSA University.
 
 ## 🚀 Features
 
@@ -28,4 +28,4 @@ Financial tracking and management dashboard for the Prototyping Lab at the Facul
 - LocalStorage API
 
 ---
-© 2026 Prototyping Lab — Faculty of Biotechnology, MSA University
+© 2026 Prototyping Lab — MSA University

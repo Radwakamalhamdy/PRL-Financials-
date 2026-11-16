@@ -777,7 +777,7 @@
     html += '</style></head><body>\n';
 
     // Header
-    html += '<div class="rh"><div><h1>Prototyping Lab Financials</h1><div class="org">Faculty of Biotechnology, MSA University</div></div>';
+    html += '<div class="rh"><div><h1>Prototyping Lab Financials</h1><div class="org">MSA University</div></div>';
     html += '<div class="rt"><div class="date">' + now + '</div><div class="pill">Total Spent: <span class="g">' + fmt(spent) + '</span></div></div></div>\n';
 
     // Top summary bar
@@ -818,7 +818,7 @@
     html += '</table></div>\n';
 
     // Footer
-    html += '<div class="rf"><span>Prototyping Lab Financials — Faculty of Biotechnology, MSA University</span><span>Generated: ' + now + '</span></div>';
+    html += '<div class="rf"><span>Prototyping Lab Financials — MSA University</span><span>Generated: ' + now + '</span></div>';
     html += '</div></body></html>';
     return html;
   }
