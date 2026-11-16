@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prototyping Lab Financials</title>
+  <meta name="description" content="Financial tracking dashboard for the Prototyping Lab — manage transactions, track spending, and monitor expenses.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="locked">
+
+  <!-- ═══════════ LOGIN OVERLAY ═══════════ -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-card">
+      <div class="login-header">
+        <img src="RDI LOGOOO.png" alt="Prototyping Lab Logo" class="login-logo">
+        <h2>Prototyping Lab Financials</h2>
+        <p class="login-subtitle">Faculty of Biotechnology, MSA University</p>
+        <span class="login-badge">🔒 Restricted Financial Access</span>
+      </div>
+      <form class="login-form" id="login-form" onsubmit="event.preventDefault(); PLF.handleLogin();">
+        <div class="login-field">
+          <label for="login-username">Username</label>
+          <div class="login-input-wrap">
+            <span class="login-icon">👤</span>
+            <input type="text" id="login-username" placeholder="Enter username" autocomplete="username" required>
+          </div>
+        </div>
+        <div class="login-field">
+          <label for="login-password">Password</label>
+          <div class="login-input-wrap">
+            <span class="login-icon">🔑</span>
+            <input type="password" id="login-password" placeholder="Enter password" autocomplete="current-password" required>
+            <button type="button" class="login-toggle-pw" onclick="PLF.toggleLoginPassword()" title="Show/Hide Password">👁️</button>
+          </div>
+        </div>
+        <div class="login-options">
+          <label class="remember-label">
+            <input type="checkbox" id="login-remember" checked>
+            <span>Remember my session</span>
+          </label>
+        </div>
+        <div class="login-error" id="login-error" style="display:none;"></div>
+        <button type="submit" class="btn-login" id="btn-login">
+          <span>Access Dashboard</span> <span class="btn-arrow">➔</span>
+        </button>
+        <div class="login-credentials-hint">
+          Default Access: <code>admin</code> &bull; <code>prl2026</code>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════ HEADER ═══════════ -->
+  <header class="header">
+    <div class="header-logo-row">
+      <img src="RDI LOGOOO.png" alt="Prototyping Lab Logo" class="header-logo">
+      <div>
+        <h1>Prototyping Lab Financials</h1>
+        <p class="header-subtitle">Faculty of Biotechnology, MSA University — Financial Management Dashboard</p>
+      </div>
+    </div>
+    <div class="header-funds-row">
+      <div class="user-session-badge" id="user-session-badge" style="display:none;">
+        <span class="user-name-tag">👤 <strong id="logged-user-name">admin</strong></span>
+        <button class="btn-logout" onclick="PLF.logout()" title="Log Out">🚪 Log Out</button>
+      </div>
+      <div class="funds-badge">
+        📉 Total Spent: <span class="amount" id="header-total-spent">0 EGP</span>
+      </div>
+      <div class="sync-badge" id="sync-status-badge" title="Real-time multi-device cloud synchronization">
+        <span class="sync-dot synced"></span>
+        <span id="sync-status-text">Live Cloud Synced</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════ TOOLBAR ═══════════ -->
+  <div class="toolbar">
+    <div class="toolbar-inner">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Filter transactions…">
+      </div>
+      <div class="toolbar-actions">
+        <button class="toolbar-btn export" onclick="PLF.exportCSV()" title="Export CSV file">📥 CSV</button>
+        <button class="toolbar-btn export" onclick="PLF.exportExcel()" title="Export Excel Spreadsheet">📊 Excel</button>
+        <button class="toolbar-btn export" onclick="PLF.exportWord()" title="Export Word Document">📝 Word</button>
+        <button class="toolbar-btn export" onclick="PLF.exportPDF()" title="Export / Print PDF Document">🖨️ PDF</button>
+        <button class="toolbar-btn" onclick="PLF.resetDefaults()" title="Reset to empty financial data">🔄 Reset Data</button>
+        <button class="toolbar-btn danger" onclick="PLF.clearAll()" title="Clear all transactions">🗑️ Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ GOOGLE SHEETS FORMULA BAR ═══════════ -->
+  <div class="formula-bar-wrap">
+    <div class="formula-bar">
+      <div class="fx-name-box" id="fx-cell-name">A1:F</div>
+      <div class="fx-symbol">ƒx</div>
+      <div class="fx-input" id="fx-formula-text">=SUM(Lab!D:D) &nbsp;|&nbsp; Total Outflow = SUM(D2:D)</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <main class="main">
+
+    <!-- ═══════════ TABLE — Prototyping Lab ═══════════ -->
+    <section class="section-card" id="section-lab">
+      <div class="section-watermark watermark-lab"></div>
+      <div class="section-header">
+        <div class="section-title">
+          <img src="RDI LOGOOO.png" alt="Prototyping Lab Logo" class="section-title-logo">
+          <span>Prototyping Lab Financials</span>
+          <span class="badge" id="badge-lab">0 transactions</span>
+        </div>
+        <div class="section-header-actions">
+          <button class="add-btn" onclick="PLF.addTx('lab')">➕ Add Row</button>
+        </div>
+      </div>
+      <div class="sort-controls" id="sort-lab">
+        <span class="sort-label">Sort Column:</span>
+        <button class="sort-btn" data-key="date" onclick="PLF.sortBy('lab','date')">Col B: Date <span class="arrow">▲</span></button>
+        <button class="sort-btn" data-key="item" onclick="PLF.sortBy('lab','item')">Col C: Item <span class="arrow">▲</span></button>
+        <button class="sort-btn" data-key="price" onclick="PLF.sortBy('lab','price')">Col D: Price <span class="arrow">▲</span></button>
+      </div>
+      <div class="table-wrap">
+        <table class="sheet-table">
+          <thead>
+            <tr>
+              <th class="col-num"><span class="col-letter">A</span><span class="col-name">#</span></th>
+              <th class="col-date"><span class="col-letter">B</span><span class="col-name">Date</span></th>
+              <th class="col-item"><span class="col-letter">C</span><span class="col-name">Item / Description</span></th>
+              <th class="col-price"><span class="col-letter">D</span><span class="col-name">Price (EGP)</span></th>
+              <th class="col-img"><span class="col-letter">E</span><span class="col-name">InstaPay Receipt</span></th>
+              <th class="col-act"><span class="col-letter">F</span><span class="col-name">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-lab"></tbody>
+        </table>
+        <div class="empty-state" id="empty-lab" style="display:none;">
+          <div class="empty-icon">📋</div>
+          <p>No transactions yet. Click <strong>Add Row</strong> to insert an entry.</p>
+        </div>
+      </div>
+      <div class="table-footer">
+        <div class="footer-formula"><span class="formula-tag">=SUM(D2:D)</span></div>
+        <div class="table-total"><span class="label">Total Prototyping Lab:</span> <span class="total-val" id="total-lab">0 EGP</span></div>
+      </div>
+    </section>
+
+    <!-- ═══════════ FINANCIAL SUMMARY ═══════════ -->
+    <section class="summary-section">
+      <div class="summary-header">
+        <div class="summary-header-left">
+          <h2>📊 Financial Summary & Analytics</h2>
+          <span class="summary-header-tag">Live Calculations</span>
+        </div>
+      </div>
+      <div class="summary-grid">
+        <div class="summary-card spent">
+          <div class="card-label">Total Spent</div>
+          <div class="card-value" id="sum-spent">0 EGP</div>
+          <div class="card-hint" id="hint-spent">Total Lab Outflow</div>
+        </div>
+        <div class="summary-card lab">
+          <div class="card-label">Total Transactions</div>
+          <div class="card-value" id="sum-count">0</div>
+          <div class="card-hint" id="hint-count">0 recorded entries</div>
+        </div>
+        <div class="summary-card received">
+          <div class="card-label">Average Expense</div>
+          <div class="card-value" id="sum-avg">0 EGP</div>
+          <div class="card-hint" id="hint-avg">Average per entry</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer class="footer">
+    Prototyping Lab Financials &copy; 2026 — Faculty of Biotechnology, MSA University
+  </footer>
+
+  <!-- ═══════════ TRANSACTION MODAL ═══════════ -->
+  <div class="modal-overlay" id="tx-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-title">Add Transaction</h3>
+        <button class="modal-close" onclick="PLF.closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="modal-date">Transaction Date</label>
+          <input type="date" id="modal-date">
+        </div>
+        <div class="form-group">
+          <label for="modal-item">Item / Description</label>
+          <input type="text" id="modal-item" placeholder="e.g. Equipment purchase">
+        </div>
+        <div class="form-group">
+          <label for="modal-price">Price (EGP)</label>
+          <input type="number" id="modal-price" placeholder="e.g. 1500" min="0" step="1">
+        </div>
+        <div class="form-group">
+          <label>InstaPay Transaction Image</label>
+          <div class="file-upload-area">
+            <div class="upload-icon">📤</div>
+            <p><strong>Click to upload</strong> or drag and drop</p>
+            <p style="font-size:0.72rem; margin-top:0.2rem; color:#94a3b8;">PNG, JPG, JPEG up to 5MB</p>
+            <input type="file" id="modal-file" accept="image/*">
+          </div>
+          <div class="file-preview" id="modal-img-preview"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-cancel" onclick="PLF.closeModal()">Cancel</button>
+        <button class="btn btn-save" onclick="PLF.saveModal()">💾 Save Transaction</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ LIGHTBOX ═══════════ -->
+  <div class="lightbox-overlay" id="lightbox-overlay">
+    <button class="lightbox-close" onclick="PLF.closeLightbox()">✕</button>
+    <img id="lightbox-img" src="" alt="Receipt Image">
+  </div>
+
+  <!-- ═══════════ CONFIRM DIALOG ═══════════ -->
+  <div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-dialog">
+      <div class="confirm-icon">🗑️</div>
+      <h3 id="confirm-title">Delete?</h3>
+      <p id="confirm-msg">Are you sure?</p>
+      <div class="confirm-actions">
+        <button class="btn btn-cancel" onclick="PLF.confirmNo()">Cancel</button>
+        <button class="btn-confirm-delete" onclick="PLF.confirmYes()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

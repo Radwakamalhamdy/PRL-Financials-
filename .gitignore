@@ -1,0 +1,7 @@
+# Backups
+*.backup
+*.tmp
+
+# System
+Thumbs.db
+.DS_Store
